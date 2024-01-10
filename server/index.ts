@@ -11,6 +11,8 @@ const app = express()
 app.use(cors())
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
+const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
+const auth = process.env.LAPLACE_LOGIN_SYNC_TOKEN
 
 const data_dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'data')
 
@@ -47,6 +49,13 @@ app.post(`${api_root}/update`, async (req, res) => {
 
 app.all(`${api_root}/get/:uuid`, async (req, res) => {
   const { uuid } = req.params
+  const { auth: authToken } = req.query
+
+  if (useAuth !== undefined && auth && auth !== authToken) {
+    res.status(403).send('Unauthorized')
+    return
+  }
+
   if (!uuid) {
     res.status(400).send('Bad Request')
     return
