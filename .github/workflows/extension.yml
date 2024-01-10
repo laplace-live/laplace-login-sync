@@ -1,4 +1,5 @@
 name: "Submit to Web Store"
+
 on:
   push:
     branches:
@@ -12,7 +13,6 @@ on:
 
 jobs:
   build:
-    name: Build extension
     runs-on: ubuntu-latest
 
     defaults:

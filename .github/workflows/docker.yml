@@ -19,12 +19,15 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
       packages: write
+
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
     - uses: actions/checkout@v4
@@ -67,7 +70,7 @@ jobs:
       uses: docker/bake-action@v4
       with:
         files: |
-          ./docker-bake.hcl
+          ./server/docker-bake.hcl
           ${{ steps.meta.outputs.bake-file }}
         targets: build-all
         push: ${{ github.event_name != 'pull_request' }}
