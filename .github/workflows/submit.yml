@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: extension
+        working-directory: ./extension
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -17,7 +17,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
           version: latest
           run_install: true
