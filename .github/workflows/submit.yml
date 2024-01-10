@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: extension
+        working-directory: ./extension
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -17,7 +17,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@v2
         with:
           version: latest
           run_install: true
@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 20
           cache: "pnpm"
+          # https://github.com/actions/setup-node/issues/706
+          cache-dependency-path: "extension"
       - name: Build the extension
         run: pnpm build
       - name: Package the extension into a zip artifact
@@ -33,5 +35,4 @@ jobs:
       - name: Browser Platform Publish
         uses: PlasmoHQ/bpp@v3
         with:
-          keys: ${{ secrets.SUBMIT_KEYS }}
-          artifact: build/chrome-mv3-prod.zip
+          keys: ${{ secrets.BPP_KEYS }}
