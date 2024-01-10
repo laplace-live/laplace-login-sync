@@ -66,7 +66,7 @@ app.all(`${api_root}/get/:uuid`, async (req, res) => {
     return
   } else {
     if (req.body.password) {
-      const parsed = cookie_decrypt(uuid, data.encrypted, req.body.password)
+      const parsed = cookieCloudDecrypt(uuid, data.encrypted, req.body.password)
       res.json(parsed)
     } else {
       res.json(data)
@@ -83,10 +83,11 @@ app.listen(port, () => {
   console.log(`Server start on http://localhost:${port}${api_root}`)
 })
 
-function cookie_decrypt(uuid: string, encrypted: string, password: string) {
+function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
   const the_key = CryptoJS.MD5(uuid + '-' + password).toString().substring(0, 16)
   const decrypted = CryptoJS.AES.decrypt(encrypted, the_key).toString(CryptoJS.enc.Utf8)
-  return JSON.parse(decrypted)
+  const parsed = JSON.parse(decrypted)
+  return parsed
 }
 
 export default app
