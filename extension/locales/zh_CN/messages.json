@@ -1,9 +1,33 @@
 {
-    "appTitle": {
-        "message": "CookieCloud"
-    },
-    "appDesc": {
-        "message": "CookieCloud是一款向自架服务器同步浏览器Cookie的工具。",
-        "description":"采用端对端加密，保证您的Cookie安全。"
-    }
+  "appTitle": {
+    "message": "LAPLACE Login Sync"
+  },
+  "appDesc": {
+    "message": "LAPLACE Login Sync 是一款用于同步登录状态的工具",
+    "description":"基于 CookieCloud 二次开发，采用端对端加密，保证您的登录信息安全。"
+  },
+  "syncLoginSessions": {
+    "message": "同步登录状态"
+  },
+  "pauseSyncing": {
+    "message": "暂停同步"
+  },
+  "copyToken": {
+    "message": "拷贝密钥"
+  },
+  "reset": {
+    "message": "重置"
+  },
+  "notInitialized": {
+    "message": "尚未初始化同步，请点击「保存并同步」"
+  },
+  "loginSyncPaused": {
+    "message": "登录状态同步已暂停"
+  },
+  "saveAndSync": {
+    "message": "保存并同步"
+  },
+  "save": {
+    "message": "保存设置"
   }
+}

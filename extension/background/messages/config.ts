@@ -10,7 +10,7 @@ export type ResponseBody = {
     message: string,
     note: string|null,
 }
- 
+
 export const handler: PlasmoMessaging.MessageHandler<RequestBody,
 ResponseBody> = async (req, res) => {
     // 获得cookie，并进行过滤
@@ -19,6 +19,7 @@ ResponseBody> = async (req, res) => {
     res.send({
         message: result['action'],
         note: result['note'],
-    })   
+    })
 }
 
+export default handler

@@ -4,7 +4,7 @@
     "node_modules"
   ],
   "include": [
-    ".plasmo/messaging.d.ts",
+    ".plasmo/index.d.ts",
     "./**/*.ts",
     "./**/*.tsx"
   ],
