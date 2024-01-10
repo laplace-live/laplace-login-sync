@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "LAPLACE Login Sync Server",
   "main": "index.js",
-  "type": "module",
   "dependencies": {
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
