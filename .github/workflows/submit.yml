@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - store-publish
+      - build
 
     permissions:
       # IMPORTANT: mandatory for making GitHub Releases
