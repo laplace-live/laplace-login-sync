@@ -1,15 +1,26 @@
 name: "Submit to Web Store"
 on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: ./extension
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -17,10 +28,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2
         with:
           version: latest
           run_install: true
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,11 +41,83 @@ jobs:
           cache: "pnpm"
           # https://github.com/actions/setup-node/issues/706
           cache-dependency-path: "extension"
+
       - name: Build the extension
         run: pnpm build
+
       - name: Package the extension into a zip artifact
         run: pnpm package
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: extension-builds
+          path: dist/
+
+  store-publish:
+    name: Publish to store
+    # Only publish to PyPI on tag pushes
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./extension
+
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v3
+        with:
+          name: python-package-distributions
+          path: dist/
+
       - name: Browser Platform Publish
+        # Only publish on tag pushes
+        if: startsWith(github.ref, 'refs/tags/')
         uses: PlasmoHQ/bpp@v3
         with:
           keys: ${{ secrets.BPP_KEYS }}
+
+  github-release:
+    name: GitHub Release
+    needs:
+      - store-publish
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # IMPORTANT: mandatory for making GitHub Releases
+
+    defaults:
+      run:
+        working-directory: ./extension
+
+    steps:
+      # checkout is required for gh cli to work
+      - uses: actions/checkout@v4
+
+      - name: Download all the dists
+        uses: actions/download-artifact@v3
+        with:
+          name: extension-builds
+          path: dist/
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create
+          '${{ github.ref_name }}'
+          --notes ""
+
+      - name: Upload artifacts to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Upload to GitHub Release using the `gh` CLI.
+        # `dist/` contains the built packages, and the
+        # sigstore-produced signatures and certificates.
+        run: >-
+          gh release upload
+          '${{ github.ref_name }}' build/*.zip
+          --repo '${{ github.repository }}'
