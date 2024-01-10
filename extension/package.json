@@ -39,7 +39,7 @@
   },
   "manifest": {
     "name": "__MSG_appTitle__",
-    "default_locale": "zh_CN",
+    "default_locale": "en",
     "host_permissions": [
       "*://*.bilibili.com/",
       "https://login-sync.laplace.id/"
