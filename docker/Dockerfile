@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM node:16-alpine3.15
+FROM --platform=$TARGETPLATFORM node:18-alpine3.15
 EXPOSE 8088
 RUN mkdir -p /data/api
 COPY app.js /data/api/app.js
