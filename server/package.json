@@ -1,5 +1,5 @@
 {
-  "name": "laplace-login-sync",
+  "name": "laplace-login-sync-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
