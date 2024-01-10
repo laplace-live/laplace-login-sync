@@ -27,7 +27,7 @@
     "@types/node": "20.10.8",
     "cross-env": "7.0.3",
     "nodemon": "3.0.2",
-    "pino-pretty": "10.3.0",
+    "pino-pretty": "10.3.1",
     "prettier": "3.1.1",
     "rimraf": "5.0.5",
     "ts-node": "10.9.2",
