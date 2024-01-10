@@ -1,38 +1,19 @@
 {
   "name": "laplace-login-sync-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "LAPLACE Login Sync Server",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "watch": "tsc --watch --preserveWatchOutput --pretty",
-    "dev": "cross-env NODE_ENV=development nodemon | pino-pretty --colorize",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "build": "rimraf dist && tsc -p tsconfig.json",
-    "serve": "tsc -p tsconfig.json --watch",
-    "start": "node dist/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "GPL",
   "dependencies": {
-    "@fastify/cors": "8.5.0",
-    "crypto-js": "4.2.0",
-    "dotenv": "^16.3.1",
-    "fastify": "4.25.2"
+    "body-parser": "^1.20.1",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.1.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "multer": "^1.4.5-lts.1",
+    "path": "^0.12.7"
   },
   "devDependencies": {
-    "@tsconfig/node20": "20.1.2",
-    "@types/crypto-js": "4.2.1",
-    "@types/node": "20.10.8",
-    "cross-env": "7.0.3",
-    "nodemon": "3.0.2",
-    "pino-pretty": "10.3.1",
-    "prettier": "3.1.1",
-    "rimraf": "5.0.5",
-    "ts-node": "10.9.2",
-    "tsconfig-paths": "4.2.0",
-    "tsup": "8.0.1",
-    "typescript": "5.3.3"
+    "nodemon": "^3.0.0"
   }
 }
