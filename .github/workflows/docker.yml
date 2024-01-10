@@ -1,4 +1,4 @@
-name: Container Image
+name: Server
 
 on:
   push:
