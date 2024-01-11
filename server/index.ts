@@ -5,8 +5,8 @@ import pako from 'pako'
 import CryptoJS from 'crypto-js'
 
 interface CookieRequestBody {
-  uuid: string;
-  encrypted: string;
+  uuid: string
+  encrypted: string
 }
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
@@ -49,59 +49,61 @@ app.use('/update', cors()).post(async (c) => {
     } else {
       return c.json({ action: 'error' })
     }
-
   } catch (err) {
     console.error('Error parsing JSON:', err)
     return c.json({ code: 400, message: 'Error parsing body' }, 400)
   }
 })
 
-app.all('/get/:uuid', validator('form', (value, c) => {
-  const password = value['password']
+app.all(
+  '/get/:uuid',
+  validator('form', (value, c) => {
+    const password = value['password']
 
-  if (!password || typeof password !== 'string') {
-    return { password: '' }
-  }
-  return { password }
-}), async (c) => {
-  const uuid = c.req.param('uuid')
-  const authToken = c.req.query('auth')
+    if (!password || typeof password !== 'string') {
+      return { password: '' }
+    }
+    return { password }
+  }),
+  async (c) => {
+    const uuid = c.req.param('uuid')
+    const authToken = c.req.query('auth')
 
-  if (useAuth !== undefined && auth && auth !== authToken) {
-    return c.json({ code: 403, message: 'Unauthorized' }, 403)
-  }
+    if (useAuth !== undefined && auth && auth !== authToken) {
+      return c.json({ code: 403, message: 'Unauthorized' }, 403)
+    }
 
-  if (!uuid) {
-    return c.json({ code: 400, message: 'Bad request' }, 400)
-  }
+    if (!uuid) {
+      return c.json({ code: 400, message: 'Bad request' }, 400)
+    }
 
-  const filePath = `${dataDir}/${uuid}.json`
+    const filePath = `${dataDir}/${uuid}.json`
 
-  if (!await Bun.file(filePath).exists()) {
-    return c.json({ code: 404, message: 'Not found' }, 404)
-  }
+    if (!(await Bun.file(filePath).exists())) {
+      return c.json({ code: 404, message: 'Not found' }, 404)
+    }
 
-  const data = JSON.parse(await Bun.file(filePath).text())
+    const data = JSON.parse(await Bun.file(filePath).text())
 
-  if (!data) {
-    return c.json({ code: 500, message: 'Internal server error' }, 500)
-  } else {
-
-    if (c.req.method === 'POST') {
-      const body = c.req.valid('form')
-      const password = body.password
-
-      if (password !== '') {
-        const parsed = cookieCloudDecrypt(uuid, data.encrypted, password)
-        return c.json(parsed)
-      } else {
-        return c.json({ code: 403, message: 'Missing token' }, 403)
-      }
+    if (!data) {
+      return c.json({ code: 500, message: 'Internal server error' }, 500)
     } else {
-      return c.json(data)
+      if (c.req.method === 'POST') {
+        const body = c.req.valid('form')
+        const password = body.password
+
+        if (password !== '') {
+          const parsed = cookieCloudDecrypt(uuid, data.encrypted, password)
+          return c.json(parsed)
+        } else {
+          return c.json({ code: 403, message: 'Missing token' }, 403)
+        }
+      } else {
+        return c.json(data)
+      }
     }
   }
-})
+)
 
 app.onError((err, c) => {
   console.error('Server error', err)
@@ -109,7 +111,9 @@ app.onError((err, c) => {
 })
 
 function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
-  const the_key = CryptoJS.MD5(uuid + '-' + password).toString().substring(0, 16)
+  const the_key = CryptoJS.MD5(uuid + '-' + password)
+    .toString()
+    .substring(0, 16)
   const decrypted = CryptoJS.AES.decrypt(encrypted, the_key).toString(CryptoJS.enc.Utf8)
   const parsed = JSON.parse(decrypted)
   return parsed
