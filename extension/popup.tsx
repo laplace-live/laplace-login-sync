@@ -39,7 +39,7 @@ function IndexPopup() {
 
     if (data['type'] == 'pause') {
       setIsLoading(false)
-      alert('暂停状态不能'+action);
+      alert('暂停状态不能' + action);
       return;
     }
 
@@ -53,59 +53,53 @@ function IndexPopup() {
       }
     })
 
-    console.log(action+"返回",ret);
+    console.log(action + "返回", ret);
 
     if (ret && ret['message'] == 'done') {
-      if( ret['note'] )
+      if (ret['note'])
         alert(ret['note']);
       else
-        alert(action+'成功');
+        alert(action + '成功');
     } else {
-      alert(action+'失败，请检查填写的信息是否正确');
+      alert(action + '失败，请检查填写的信息是否正确');
     }
 
     setIsLoading(false)
   }
 
-  async function save(push: boolean)
-  {
-    if( !data['endpoint'] || !data['password'] || !data['uuid'] || !data['type'] )
-    {
+  async function save(push: boolean) {
+    if (!data['endpoint'] || !data['password'] || !data['uuid'] || !data['type']) {
       alert('请填写完整的信息');
       return;
     }
-    await save_data( "COOKIE_SYNC_SETTING", data );
-    const ret = await load_data("COOKIE_SYNC_SETTING") ;
-    console.log( "load", ret );
-    if( JSON.stringify(ret) == JSON.stringify(data) )
-    {
+    await save_data("COOKIE_SYNC_SETTING", data);
+    const ret = await load_data("COOKIE_SYNC_SETTING");
+    console.log("load", ret);
+    if (JSON.stringify(ret) == JSON.stringify(data)) {
       push && test('手动同步')
       alert('保存成功');
       // window.close();
     }
   }
 
-  function onChange(name:string, e:(React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>))
-  {
+  function onChange(name: string, e: (React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>)) {
     // console.log( "e" , name , e.target.value );
-    setData({...data,[name]:e.target.value??''});
+    setData({ ...data, [name]: e.target.value ?? '' });
   }
 
-  function uuid_regen()
-  {
-    setData({...data,'uuid':String(short_uid.generate())});
+  function uuid_regen() {
+    setData({ ...data, 'uuid': String(short_uid.generate()) });
   }
 
-  function password_gen()
-  {
-    setData({...data,'password':String(short_uid.generate())});
+  function password_gen() {
+    setData({ ...data, 'password': String(short_uid.generate()) });
   }
 
   function loginSyncTokenGenerate() {
     setData({
       ...data,
-      'uuid':String(short_uid.generate()),
-      'password':String(short_uid.generate()),
+      'uuid': String(short_uid.generate()),
+      'password': String(short_uid.generate()),
     });
   }
 
@@ -119,15 +113,14 @@ function IndexPopup() {
   }
 
   useEffect(() => {
-    async function load_config()
-    {
-      const ret = await load_data("COOKIE_SYNC_SETTING") ;
-      if( ret )  setData({...data,...ret});
+    async function load_config() {
+      const ret = await load_data("COOKIE_SYNC_SETTING");
+      if (ret) setData({ ...data, ...ret });
     }
     load_config();
-  },[]);
+  }, []);
 
-  return <div className="w-128 overflow-x-hidden bg-white dark:bg-neutral-800" style={{"width":"360px"}}>
+  return <div className="w-128 overflow-x-hidden bg-white dark:bg-neutral-800" style={{ "width": "360px" }}>
     <div className="form p-3">
       <div className="text-line text-gray-700 dark:text-neutral-300">
         {/* <div className="">工作模式</div> */}
@@ -161,24 +154,24 @@ function IndexPopup() {
         </div>}
 
         {data['type'] && data['type'] != 'pause' && <>
-        {/* <div className="">服务器地址</div>
+          {/* <div className="">服务器地址</div>
         <input type="text" className="border-1  my-2 p-2 rounded w-full" placeholder="请输入服务器地址" value={data['endpoint']} onChange={e=>onChange('endpoint',e)} /> */}
-        {/* <div className="">同步密钥</div> */}
-        <div className="flex flex-row">
-          <div className="left flex-1">
-          <Input type="text" className="border-1  my-1 p-2 rounded w-full" placeholder="端对端用户密钥" value={`${data['uuid']}@${data['password']}`} readOnly />
-          </div>
-          <div className="right">
-          <Button className="p-2 my-1 ml-2" onClick={() => copyToClipboard(`${data['uuid']}@${data['password']}`)}>{chrome.i18n.getMessage('copyToken')}</Button>
-          <Button className="ml-2" color="red" onClick={()=>setData(init)} disabled={isLoading}>{chrome.i18n.getMessage('reset')}</Button>
+          {/* <div className="">同步密钥</div> */}
+          <div className="flex flex-row">
+            <div className="left flex-1">
+              <Input type="text" className="border-1  my-1 p-2 rounded w-full" placeholder="端对端用户密钥" value={`${data['uuid']}@${data['password']}`} readOnly />
+            </div>
+            <div className="right">
+              <Button className="p-2 my-1 ml-2" onClick={() => copyToClipboard(`${data['uuid']}@${data['password']}`)}>{chrome.i18n.getMessage('copyToken')}</Button>
+              <Button className="ml-2" color="red" onClick={() => setData(init)} disabled={isLoading}>{chrome.i18n.getMessage('reset')}</Button>
 
-          {/* {data['uuid'] !== init['uuid'] && (
+              {/* {data['uuid'] !== init['uuid'] && (
             <Button className="p-2 my-1 ml-2" color="red" onClick={() => loginSyncTokenGenerate()} disabled={isLoading}>重新生成</Button>
           )} */}
+            </div>
           </div>
-        </div>
 
-        {/* <div className="">用户KEY</div>
+          {/* <div className="">用户KEY</div>
         <div className="flex flex-row">
           <div className="left flex-1">
           <input type="text" className="border-1  my-2 p-2 rounded w-full" placeholder="唯一用户ID" value={data['uuid']}  onChange={e=>onChange('uuid',e)}/>
@@ -197,11 +190,11 @@ function IndexPopup() {
           </div>
         </div> */}
 
-        {/* <div className="">同步时间间隔·分钟</div>
+          {/* <div className="">同步时间间隔·分钟</div>
         <input type="number" className="border-1  my-2 p-2 rounded w-full" placeholder="最少10分钟" value={data['interval']} onChange={e=>onChange('interval',e)} /> */}
 
-        {data['type'] && data['type'] == 'up' && <>
-          {/* <div className="">是否同步Local Storage</div>
+          {data['type'] && data['type'] == 'up' && <>
+            {/* <div className="">是否同步Local Storage</div>
           <div className="my-2">
             <input type="radio" id="with-localstorage-on" name="with-localstorage" value={1} checked={data['with_storage'] === '1'} onChange={e => onChange('with_storage', e)} />
             <label htmlFor="with-localstorage-on">是</label>
@@ -210,7 +203,7 @@ function IndexPopup() {
             <label htmlFor="with-localstorage-off">否</label>
           </div> */}
 
-          {/* <div className="">请求Header·选填</div>
+            {/* <div className="">请求Header·选填</div>
           <textarea className="border-1  my-2 p-2 rounded w-full" style={{"height":"60px"}} placeholder="在请求时追加Header，用于服务端鉴权等场景，一行一个，格式为'Key:Value'，不能有空格"  onChange={e=>onChange('headers',e)} value={data['headers']}/>
 
           <div className="">同步域名关键词·选填</div>
@@ -219,15 +212,15 @@ function IndexPopup() {
           <div className="">同步域名黑名单·选填</div>
           <textarea className="border-1  my-2 p-2 rounded w-full" style={{"height":"60px"}} placeholder="黑名单仅在同步域名关键词为空时生效。一行一个域名，匹配则不参与同步"  onChange={e=>onChange('blacklist',e)} value={data['blacklist']}/> */}
 
-          {/* <div className="">Cookie保活·选填</div>
+            {/* <div className="">Cookie保活·选填</div>
           <textarea className="border-1  my-2 p-2 rounded w-full" style={{"height":"60px"}} placeholder="定时后台刷新URL，模拟用户活跃。一行一个URL，默认60分钟，可用 URL|分钟数 的方式指定刷新时间"  onChange={e=>onChange('keep_live',e)} value={data['keep_live']}/> */}
-        </>}
+          </>}
         </>}
 
         {data['type'] && data['type'] == 'pause' && <>
-        <div className="bg-orange-400 text-white p-2 my-2 rounded">
-          {chrome.i18n.getMessage('loginSyncPaused')}
-        </div>
+          <div className="bg-orange-400 text-white p-2 my-2 rounded">
+            {chrome.i18n.getMessage('loginSyncPaused')}
+          </div>
         </>}
         <div className="flex flex-row justify-between mt-2">
           <div className="left text-gray-400">
