@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test"
-import request from 'supertest'
-import app from './index'
+import { describe, expect, test } from 'bun:test'
+import app from './'
 
 describe('events', () => {
   test('should return the correct response', async () => {
-    const response = await request(app).get('/')
-    expect(response.statusCode).toBe(200)
+    const req = new Request('http://localhost/')
+    const res = await app.fetch(req)
+    expect(res.status).toBe(200)
   })
 })

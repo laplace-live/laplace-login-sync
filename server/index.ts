@@ -1,95 +1,111 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-import express, { type NextFunction, type Request, type Response } from 'express'
-import cors from 'cors'
-import multer from 'multer'
-import bodyParser from 'body-parser'
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { validator } from 'hono/validator'
+import pako from 'pako'
 import CryptoJS from 'crypto-js'
 
-const app = express()
-app.use(cors())
+interface CookieRequestBody {
+  uuid: string;
+  encrypted: string;
+}
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
 const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
 const auth = process.env.LAPLACE_LOGIN_SYNC_TOKEN
 
-const data_dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'data')
+const dataDir = import.meta.dir + '/data'
 
-const forms = multer({ limits: { fieldSize: 100 * 1024 * 1024 } })
-app.use(forms.array('cookies'))
+const app = new Hono()
 
-app.use(bodyParser.json({ limit: '50mb' }))
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use('/update', cors())
+app.use('/get/:uuid', cors())
 
-const api_root = process.env.API_ROOT ? process.env.API_ROOT.trim().replace(/\/+$/, '') : ''
-
-app.all(`${api_root}/`, (req, res) => {
-  res.send(`LAPLACE Login Sync Server. API ROOT = ${api_root}`)
+app.all('/', (c) => {
+  return c.text(`LAPLACE Login Sync Server`)
 })
 
-app.post(`${api_root}/update`, async (req, res) => {
-  const { encrypted, uuid } = req.body
-  if (!encrypted || !uuid) {
-    res.status(400).send('Bad Request')
-    return
+app.use('/update', cors()).post(async (c) => {
+  const body = await c.req.arrayBuffer()
+  const raw = pako.inflate(body)
+  const decoder = new TextDecoder()
+  const text = decoder.decode(raw)
+
+  try {
+    const json: CookieRequestBody = JSON.parse(text)
+    const { uuid, encrypted } = json
+
+    if (!encrypted || !uuid) {
+      return c.json({ code: 400, message: 'Request body error' }, 400)
+    }
+
+    const filePath = `${dataDir}/${uuid}.json`
+    const content = JSON.stringify({ encrypted })
+
+    await Bun.write(filePath, content)
+    const savedContent = await Bun.file(filePath).text()
+
+    if (savedContent === content) {
+      return c.json({ action: 'done' })
+    } else {
+      return c.json({ action: 'error' })
+    }
+
+  } catch (err) {
+    console.error('Error parsing JSON:', err)
+    return c.json({ code: 400, message: 'Error parsing body' }, 400)
   }
-
-  const file_path = path.join(data_dir, path.basename(uuid) + '.json')
-  const content = JSON.stringify({ encrypted })
-
-  await Bun.write(file_path, content)
-  const savedContent = await Bun.file(file_path).text()
-
-  if (savedContent === content)
-    res.json({ "action": "done" })
-  else
-    res.json({ "action": "error" })
 })
 
-app.all(`${api_root}/get/:uuid`, async (req, res) => {
-  const { uuid } = req.params
-  const { auth: authToken } = req.query
+app.all('/get/:uuid', validator('form', (value, c) => {
+  const password = value['password']
+
+  if (!password || typeof password !== 'string') {
+    return { password: '' }
+  }
+  return { password }
+}), async (c) => {
+  const uuid = c.req.param('uuid')
+  const authToken = c.req.query('auth')
 
   if (useAuth !== undefined && auth && auth !== authToken) {
-    res.status(403).send('Unauthorized')
-    return
+    return c.json({ code: 403, message: 'Unauthorized' }, 403)
   }
 
   if (!uuid) {
-    res.status(400).send('Bad Request')
-    return
+    return c.json({ code: 400, message: 'Bad request' }, 400)
   }
 
-  const file_path = path.join(data_dir, path.basename(uuid) + '.json')
+  const filePath = `${dataDir}/${uuid}.json`
 
-  if (!await Bun.file(file_path).exists()) {
-    res.status(404).send('Not Found')
-    return
+  if (!await Bun.file(filePath).exists()) {
+    return c.json({ code: 404, message: 'Not found' }, 404)
   }
 
-  const data = JSON.parse(await Bun.file(file_path).text())
+  const data = JSON.parse(await Bun.file(filePath).text())
 
   if (!data) {
-    res.status(500).send('Internal Serverless Error')
-    return
+    return c.json({ code: 500, message: 'Internal server error' }, 500)
   } else {
-    if (req.body.password) {
-      const parsed = cookieCloudDecrypt(uuid, data.encrypted, req.body.password)
-      res.json(parsed)
+
+    if (c.req.method === 'POST') {
+      const body = c.req.valid('form')
+      const password = body.password
+
+      if (password !== '') {
+        const parsed = cookieCloudDecrypt(uuid, data.encrypted, password)
+        return c.json(parsed)
+      } else {
+        return c.json({ code: 403, message: 'Missing token' }, 403)
+      }
     } else {
-      res.json(data)
+      return c.json(data)
     }
   }
 })
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err)
-  res.status(500).send('Internal Serverless Error')
-})
-
-app.listen(port, () => {
-  console.log(`Server start on http://localhost:${port}${api_root}`)
+app.onError((err, c) => {
+  console.error('Server error', err)
+  return c.json({ code: 500, message: 'Server error' }, 500)
 })
 
 function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
@@ -99,4 +115,7 @@ function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
   return parsed
 }
 
-export default app
+export default {
+  port,
+  fetch: app.fetch,
+}

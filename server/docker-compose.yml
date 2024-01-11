@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  laplace-login-sync-server:
+    build: .
+    env_file: ./.env
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 8088:8088
