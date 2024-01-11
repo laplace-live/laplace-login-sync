@@ -172,10 +172,10 @@ export async function upload_cookie( payload )
         console.log("error", error);
         showBadge("err");
         return false;
-    } 
+    }
     // 用aes对cookie进行加密
     const the_key = CryptoJS.MD5(payload['uuid']+'-'+payload['password']).toString().substring(0,16);
-    const data_to_encrypt = JSON.stringify({"cookie_data":cookies,"local_storage_data":local_storages,"update_time":new Date()});
+    const data_to_encrypt = JSON.stringify({ "cookie_data": cookies, "local_storage_data": local_storages });
     const encrypted = CryptoJS.AES.encrypt(data_to_encrypt, the_key).toString();
     const endpoint = payload['endpoint'].trim().replace(/\/+$/, '')+'/update';
 
@@ -183,13 +183,21 @@ export async function upload_cookie( payload )
     const sha256 = CryptoJS.SHA256(uuid+"-"+password+"-"+endpoint+"-"+data_to_encrypt).toString();
     console.log( "sha256", sha256 );
     const last_uploaded_info = await load_data( 'LAST_UPLOADED_COOKIE' );
+    console.log(`last_uploaded_info.timestamp`, last_uploaded_info.timestamp);
+
     // 如果24小时内已经上传过同样内容的数据，则不再上传
-    if( ( !payload['no_cache'] || parseInt(payload['no_cache']) < 1 ) && last_uploaded_info && last_uploaded_info.sha256 === sha256 && new Date().getTime() - last_uploaded_info.timestamp < 1000*60*60*24 )
-    {
+    if (
+        (!payload['no_cache'] || parseInt(payload['no_cache']) < 1 )
+        && last_uploaded_info && last_uploaded_info.sha256 === sha256
+        && new Date().getTime() - last_uploaded_info.timestamp < 1000 * 60 * 60 * 24
+    ) {
         console.log("same data in 24 hours, skip1");
-        return {action:'done',note:'本地Cookie数据无变动，不再上传'};
+        return {
+            action: 'done',
+            note: '本地 Cookie 数据无变动，不再上传'
+        };
     }
-    
+
     const payload2 = {
             uuid: payload['uuid'],
             encrypted: encrypted
@@ -204,15 +212,15 @@ export async function upload_cookie( payload )
         });
         const result = await response.json();
 
-        if( result && result.action === 'done' ) 
-            await save_data( 'LAST_UPLOADED_COOKIE', {"timestamp": new Date().getTime(), "sha256":sha256 } );    
+        if( result && result.action === 'done' )
+            await save_data( 'LAST_UPLOADED_COOKIE', {"timestamp": new Date().getTime(), "sha256":sha256 } );
 
         return result;
     } catch (error) {
         console.log("error", error);
         showBadge("err");
         return false;
-    }  
+    }
 }
 
 export async function download_cookie(payload)
@@ -262,8 +270,6 @@ export async function download_cookie(payload)
                                 showBadge("err");
                                 console.log("set cookie error", error);
                             }
-                            
-                            
                         }
                     }
                 }
@@ -342,7 +348,7 @@ async function get_cookie_by_domains( domains = [], blacklist = [] )
                     {
                         ret_cookies[domain].push( cookie );
                     }
-                }    
+                }
             }
         }
         else
@@ -353,7 +359,7 @@ async function get_cookie_by_domains( domains = [], blacklist = [] )
                 // console.log("the cookie", cookie);
                 if( cookie.domain )
                 {
-                    
+
                     let in_blacklist = false;
                     for( const black of blacklist )
                     {
@@ -373,16 +379,16 @@ async function get_cookie_by_domains( domains = [], blacklist = [] )
                         ret_cookies[cookie.domain].push( cookie );
                     }
                 }
-                
+
             }
         }
-        
+
     }
     // console.log( "ret_cookies", ret_cookies );
     return ret_cookies;
 }
 
-function buildUrl(secure, domain, path) 
+function buildUrl(secure, domain, path)
 {
     if (domain.startsWith('.')) {
         domain = domain.substr(1);
@@ -396,7 +402,7 @@ export function sleep(ms) {
     });
 }
 
-export function showBadge(text, color = "red", delay = 5000) {
+export function showBadge(text, color = "red", delay = 1000) {
     chrome.action.setBadgeText({text:text});
     chrome.action.setBadgeBackgroundColor({color:color});
     setTimeout(() => {

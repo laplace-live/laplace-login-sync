@@ -15,7 +15,7 @@ function IndexPopup() {
     "endpoint": "https://login-sync.laplace.id",
     // "password": "",
     "password": String(short_uid.generate()),
-    "interval": 5,
+    "interval": 2,
     "domains": "bilibili.com",
     "uuid": String(short_uid.generate()),
     "type": "up",
@@ -27,34 +27,43 @@ function IndexPopup() {
   const [data, setData] = useState(init);
   const [isLoading, setIsLoading] = useState(false)
 
-  async function test(action='测试')
-  {
+  async function test(action = '测试') {
     console.log("request,begin");
     setIsLoading(true)
-    if( !data['endpoint'] || !data['password'] || !data['uuid'] || !data['type'] )
-    {
+
+    if (!data['endpoint'] || !data['password'] || !data['uuid'] || !data['type']) {
       setIsLoading(false)
       alert('请填写完整的信息');
       return;
     }
-    if( data['type'] == 'pause' )
-    {
+
+    if (data['type'] == 'pause') {
       setIsLoading(false)
       alert('暂停状态不能'+action);
       return;
     }
-    const ret = await sendToBackground<RequestBody, ResponseBody>({name:"config",body:{payload:{...data,no_cache:1}}});
+
+    const ret = await sendToBackground<RequestBody, ResponseBody>({
+      name: "config",
+      body: {
+        payload: {
+          ...data,
+          no_cache: 1
+        }
+      }
+    })
+
     console.log(action+"返回",ret);
-    if( ret && ret['message'] == 'done' )
-    {
+
+    if (ret && ret['message'] == 'done') {
       if( ret['note'] )
         alert(ret['note']);
       else
         alert(action+'成功');
-    }else
-    {
+    } else {
       alert(action+'失败，请检查填写的信息是否正确');
     }
+
     setIsLoading(false)
   }
 
