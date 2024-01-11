@@ -6,10 +6,10 @@ export default {
   tabWidth: 2,
   useTabs: false,
   semi: false,
-  singleQuote: false,
+  singleQuote: true,
+  jsxSingleQuote: true,
   trailingComma: "none",
   bracketSpacing: true,
-  bracketSameLine: true,
   plugins: ["@ianvs/prettier-plugin-sort-imports"],
   importOrder: [
     "<BUILTIN_MODULES>", // Node.js built-in modules

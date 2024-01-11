@@ -30,7 +30,7 @@ export async function storage_set(key, value) {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set({
       [key]: value
-    }, function() {
+    }, function () {
       return resolve(true);
     });
   });
@@ -38,7 +38,7 @@ export async function storage_set(key, value) {
 
 export async function storage_get(key) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get([key], function(result) {
+    chrome.storage.local.get([key], function (result) {
       if (result[key] === undefined) {
         resolve(null);
       } else {
@@ -50,7 +50,7 @@ export async function storage_get(key) {
 
 export async function storage_remove(key) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.remove([key], function(result) {
+    chrome.storage.local.remove([key], function (result) {
       resolve(result);
     });
   });
@@ -74,7 +74,7 @@ export async function browser_load_all(prefix = null) {
 
 export async function load_all(prefix = null) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get(null, function(result) {
+    chrome.storage.local.get(null, function (result) {
       let ret = result;
       // 只返回以prefix开头的key对应的属性
       if (prefix) {
