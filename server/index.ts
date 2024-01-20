@@ -1,6 +1,8 @@
+import { unlink } from 'node:fs/promises'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { validator } from 'hono/validator'
+
 import pako from 'pako'
 import CryptoJS from 'crypto-js'
 
@@ -18,13 +20,14 @@ const dataDir = import.meta.dir + '/data'
 const app = new Hono()
 
 app.use('/update', cors())
+app.use('/remove', cors())
 app.use('/get/:uuid', cors())
 
 app.all('/', (c) => {
   return c.text(`LAPLACE Login Sync Server`)
 })
 
-app.use('/update', cors()).post(async (c) => {
+app.post('/update', async (c) => {
   const body = await c.req.arrayBuffer()
   const raw = pako.inflate(body)
   const decoder = new TextDecoder()
@@ -54,6 +57,61 @@ app.use('/update', cors()).post(async (c) => {
     return c.json({ code: 400, message: 'Error parsing body' }, 400)
   }
 })
+
+app.post(
+  '/remove',
+  validator('json', (value, c) => {
+    const uuid = value['uuid']
+    const token = value['token']
+
+    if (!uuid || typeof uuid !== 'string') {
+      return c.text('Invalid uuid!', 400)
+    }
+    if (!token || typeof token !== 'string') {
+      return c.text('Invalid uuid!', 400)
+    }
+    return {
+      uuid,
+      token,
+    }
+  }),
+  async (c) => {
+    const body = c.req.valid('json')
+    const uuid = body.uuid
+    const token = body.token
+
+    try {
+      const filePath = `${dataDir}/${uuid}.json`
+
+      if (!(await Bun.file(filePath).exists())) {
+        return c.json({ code: 404, message: 'Credentials not found' }, 404)
+      } else {
+
+        const data = JSON.parse(await Bun.file(filePath).text())
+
+        if (!data) {
+          return c.json({ code: 500, message: 'Internal server error' }, 500)
+        } else {
+
+          try {
+            const parsed = cookieCloudDecrypt(uuid, data.encrypted, token)
+
+            if (typeof parsed === 'object' && 'cookie_data' in parsed) {
+              await unlink(filePath)
+              return c.json({ code: 200, message: 'Done' })
+            } else {
+              return c.json({ code: 403, message: 'Decrpted data error' })
+            }
+          } catch (error) {
+            return c.json({ code: 403, message: 'Token error' })
+          }
+        }
+      }
+    } catch (error) {
+      return c.json({ code: 500, message: 'Error removing credentials' })
+    }
+  }
+)
 
 app.all(
   '/get/:uuid',
