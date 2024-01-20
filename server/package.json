@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "LAPLACE Login Sync Server",
   "type": "module",
-  "main": "index.js",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "bun run --hot index.ts",
+    "build": "bun build ./index.ts --outdir ./build"
+  },
   "dependencies": {
     "crypto-js": "4.2.0",
     "hono": "3.12.2",
