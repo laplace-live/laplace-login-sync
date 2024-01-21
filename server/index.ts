@@ -13,7 +13,7 @@ interface CookieRequestBody {
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
 const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
-const auth = process.env.LAPLACE_LOGIN_SYNC_TOKEN
+const auth = process.env.LAPLACE_LOGIN_SYNC_AUTH_KEY
 
 const dataDir = import.meta.dir + '/data'
 

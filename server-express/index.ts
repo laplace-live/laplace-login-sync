@@ -12,7 +12,7 @@ app.use(cors())
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
 const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
-const auth = process.env.LAPLACE_LOGIN_SYNC_TOKEN
+const auth = process.env.LAPLACE_LOGIN_SYNC_AUTH_KEY
 
 const data_dir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'data')
 
