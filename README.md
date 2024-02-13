@@ -6,6 +6,7 @@ LAPLACE Login Sync based on CookieCloud. View the [source repo](https://github.c
 
 - Server: Node.js -> Bun
 - Server: Express.js -> Hono
+- Server: Private mode - server with authentication
 - Extension: Simpler UI
 - Extension: i18n
 
