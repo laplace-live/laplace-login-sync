@@ -1,6 +1,6 @@
 # LAPLACE Login Sync
 
-LAPLACE Login Sync based on CookieCloud. See `README.orig.md` for original info.
+LAPLACE Login Sync based on CookieCloud. View the [source repo](https://github.com/easychen/CookieCloud) for the original info.
 
 ## Changes
 
