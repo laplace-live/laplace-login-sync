@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import short_uid from 'short-uuid'
+import browser from 'webextension-polyfill'
 
 import { sendToBackground } from '@plasmohq/messaging'
 
@@ -151,7 +152,7 @@ function IndexPopup() {
 
           {data['uuid'] && data['uuid'] === init['uuid'] && (
             <div className='bg-orange-400 text-white p-2 mb-2 rounded'>
-              {chrome.i18n.getMessage('notInitialized')}
+              {browser.i18n.getMessage('notInitialized')}
             </div>
           )}
 
@@ -166,7 +167,7 @@ function IndexPopup() {
                 onChange={(e) => onChange('type', e)}
               />
               <label htmlFor='up'>
-                {chrome.i18n.getMessage('syncLoginSessions')}
+                {browser.i18n.getMessage('syncLoginSessions')}
               </label>
             </div>
 
@@ -192,7 +193,7 @@ function IndexPopup() {
                 onChange={(e) => onChange('type', e)}
               />
               <label htmlFor='pause'>
-                {chrome.i18n.getMessage('pauseSyncing')}
+                {browser.i18n.getMessage('pauseSyncing')}
               </label>
             </div>
           </div>
@@ -231,7 +232,7 @@ function IndexPopup() {
                       copyToClipboard(`${data['uuid']}@${data['password']}`)
                     }
                   >
-                    {chrome.i18n.getMessage('copyToken')}
+                    {browser.i18n.getMessage('copyToken')}
                   </Button>
                   <Button
                     className='ml-2'
@@ -239,7 +240,7 @@ function IndexPopup() {
                     onClick={() => setData(init)}
                     disabled={isLoading}
                   >
-                    {chrome.i18n.getMessage('reset')}
+                    {browser.i18n.getMessage('reset')}
                   </Button>
 
                   {/* {data['uuid'] !== init['uuid'] && (
@@ -373,7 +374,7 @@ function IndexPopup() {
           {data['type'] && data['type'] == 'pause' && (
             <>
               <div className='bg-orange-400 text-white p-2 my-2 rounded'>
-                {chrome.i18n.getMessage('loginSyncPaused')}
+                {browser.i18n.getMessage('loginSyncPaused')}
               </div>
             </>
           )}
@@ -417,8 +418,8 @@ function IndexPopup() {
                 disabled={isLoading}
               >
                 {data['type'] && data['type'] == 'pause'
-                  ? chrome.i18n.getMessage('save')
-                  : chrome.i18n.getMessage('saveAndSync')}
+                  ? browser.i18n.getMessage('save')
+                  : browser.i18n.getMessage('saveAndSync')}
               </Button>
             </div>
           </div>
