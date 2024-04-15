@@ -168,15 +168,16 @@ export async function upload_cookie(payload) {
   const sha256 = CryptoJS.SHA256(uuid + "-" + password + "-" + endpoint + "-" + data_to_encrypt).toString();
   console.log("sha256", sha256);
   const last_uploaded_info = await load_data('LAST_UPLOADED_COOKIE');
-  console.log(`last_uploaded_info.timestamp`, last_uploaded_info.timestamp);
+  console.log(`last_uploaded_info.timestamp`, last_uploaded_info?.timestamp);
 
-  // 如果24小时内已经上传过同样内容的数据，则不再上传
+  // 如果 3 小时内已经上传过同样内容的数据，则不再上传
   if (
     (!payload['no_cache'] || parseInt(payload['no_cache']) < 1) &&
     last_uploaded_info && last_uploaded_info.sha256 === sha256 &&
-    new Date().getTime() - last_uploaded_info.timestamp < 1000 * 60 * 60 * 24
+    // In some rare case (ie when extension loaded in development mode), the .timestamp can be undefined
+    new Date().getTime() - (last_uploaded_info?.timestamp || new Date().getTime()) < 1000 * 60 * 60 * 3
   ) {
-    console.log("same data in 24 hours, skip1");
+    console.log("same data in 3 hours, skip1");
     return {
       action: 'done',
       note: '本地 Cookie 数据无变动，不再上传'
