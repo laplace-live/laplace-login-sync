@@ -2,13 +2,9 @@ import '@plasmohq/messaging/background'
 
 import browser from 'webextension-polyfill'
 
-import {
-  download_cookie,
-  load_data,
-  save_data,
-  sleep,
-  upload_cookie
-} from '../function'
+import type { ConfigProps } from '~types'
+
+import { load_data, sleep, upload_cookie } from '../function'
 
 export const life = 42
 console.log(`HELLO WORLD - ${life}`)
@@ -29,8 +25,8 @@ browser.runtime.onInstalled.addListener(function (details) {
 
 browser.alarms.onAlarm.addListener(async (a) => {
   if (a.name == 'bg_1_minute') {
-    // console.log( 'bg_1_minute' );
-    const config = await load_data('COOKIE_SYNC_SETTING')
+    const config: ConfigProps = await load_data('COOKIE_SYNC_SETTING')
+
     if (config) {
       if (config.type && config.type == 'pause') {
         console.log('暂停模式，不同步')
@@ -42,29 +38,19 @@ browser.alarms.onAlarm.addListener(async (a) => {
       const minute = now.getMinutes()
       const hour = now.getHours()
       const day = now.getDate()
+      // Total minutes from the begining of this month
       const minute_count = (day * 24 + hour) * 60 + minute
 
       if (config.uuid) {
         // 如果时间间隔可以整除分钟数，则进行同步
-        if (
-          parseInt(config.interval) < 1 ||
-          minute_count % config.interval == 0
-        ) {
+        if (config.interval < 1 || minute_count % config.interval == 0) {
           // 开始同步
           console.log(`同步时间到 ${minute_count} ${config.interval}`)
-          if (config.type && config.type == 'down') {
-            // 从服务器取得cookie，向本地写入cookie
-            const result = await download_cookie(config)
-            if (result && result['action'] == 'done')
-              console.log('下载覆盖成功')
-            else console.log(result)
-          } else {
-            const result = await upload_cookie(config)
-            if (result && result['action'] == 'done') console.log('上传成功')
-            else console.log(result)
-          }
+          const result = await upload_cookie(config)
+          if (result && result['action'] == 'done') console.log('上传成功')
+          else console.log(result)
         } else {
-          // console.log(`未到同步时间 ${minute_count} ${config.interval}`);
+          console.log(`未到同步时间 ${minute_count} ${config.interval}`)
         }
       }
 
@@ -107,7 +93,9 @@ browser.alarms.onAlarm.addListener(async (a) => {
             })
             // 等待五秒后关闭
             await sleep(5000)
-            await browser.tabs.remove(tab.id)
+            if (tab.id) {
+              await browser.tabs.remove(tab.id)
+            }
           }
         }
       }

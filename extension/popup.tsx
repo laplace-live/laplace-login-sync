@@ -10,6 +10,7 @@ import './style.scss'
 
 import Button from '~components/button'
 import Input from '~components/input'
+import type { ConfigProps } from '~types'
 
 import { load_data, save_data } from './function'
 
@@ -17,9 +18,9 @@ import { load_data, save_data } from './function'
 // import { Radio } from 'antd';
 
 function IndexPopup() {
-  let init: Object = {
-    // "endpoint": "http://127.0.0.1:8088",
-    endpoint: 'https://login-sync.laplace.id',
+  let init: ConfigProps = {
+    // endpoint: 'http://127.0.0.1:8088',
+    endpoint: 'https://login-sync.laplace.cn',
     // "password": "",
     password: String(short_uid.generate()),
     interval: 2,
@@ -29,7 +30,8 @@ function IndexPopup() {
     keep_live: '',
     with_storage: 0,
     blacklist: 'google.com',
-    headers: ''
+    headers: '',
+    forceUpdate: false
   }
   const [data, setData] = useState(init)
   const [isLoading, setIsLoading] = useState(false)
@@ -60,7 +62,7 @@ function IndexPopup() {
       body: {
         payload: {
           ...data,
-          no_cache: 1
+          forceUpdate: true
         }
       }
     })
@@ -197,12 +199,6 @@ function IndexPopup() {
               </label>
             </div>
           </div>
-
-          {data['type'] && data['type'] == 'down' && (
-            <div className='bg-red-600 text-white p-2 my-2 rounded'>
-              覆盖模式主要用于云端和只读用的浏览器，请勿同时覆盖过多浏览器实例，否则可能会导致平台风控登出当前账号
-            </div>
-          )}
 
           {data['type'] && data['type'] != 'pause' && (
             <>

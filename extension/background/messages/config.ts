@@ -1,11 +1,13 @@
 import type { PlasmoMessaging } from '@plasmohq/messaging'
 
-import { download_cookie, upload_cookie } from '../../function'
+import type { ConfigProps } from '~types'
+
+import { upload_cookie } from '../../function'
 
 // import { Base64 } from 'js-base64';
 
 export type RequestBody = {
-  payload: object
+  payload: ConfigProps
 }
 
 export type ResponseBody = {
@@ -18,15 +20,15 @@ export const handler: PlasmoMessaging.MessageHandler<
   ResponseBody
 > = async (req, res) => {
   // 获得cookie，并进行过滤
-  const payload = req.body.payload
-  const result =
-    payload['type'] && payload['type'] == 'down'
-      ? await download_cookie(payload)
-      : await upload_cookie(payload)
-  res.send({
-    message: result['action'],
-    note: result['note']
-  })
+  const payload = req.body?.payload
+
+  if (payload && payload['type']) {
+    const result = await upload_cookie(payload)
+    res.send({
+      message: result['action'],
+      note: result['note']
+    })
+  }
 }
 
 export default handler

@@ -38,37 +38,43 @@ dependencies:
 
 devDependencies:
   '@ianvs/prettier-plugin-sort-imports':
-    specifier: 4.1.1
+    specifier: ^4.1.1
     version: 4.1.1(prettier@3.2.5)
   '@types/chrome':
-    specifier: 0.0.260
+    specifier: ^0.0.260
     version: 0.0.260
+  '@types/crypto-js':
+    specifier: ^4.2.2
+    version: 4.2.2
   '@types/node':
-    specifier: 20.11.17
+    specifier: ^20.11.17
     version: 20.11.17
+  '@types/pako':
+    specifier: ^2.0.3
+    version: 2.0.3
   '@types/react':
-    specifier: 18.2.55
+    specifier: ^18.2.55
     version: 18.2.55
   '@types/react-dom':
-    specifier: 18.2.19
+    specifier: ^18.2.19
     version: 18.2.19
   '@types/webextension-polyfill':
-    specifier: 0.10.7
+    specifier: ^0.10.7
     version: 0.10.7
   autoprefixer:
-    specifier: 10.4.17
+    specifier: ^10.4.17
     version: 10.4.17(postcss@8.4.35)
   postcss:
-    specifier: 8.4.35
+    specifier: ^8.4.35
     version: 8.4.35
   prettier:
-    specifier: 3.2.5
+    specifier: ^3.2.5
     version: 3.2.5
   tailwindcss:
-    specifier: 3.4.1
+    specifier: ^3.4.1
     version: 3.4.1
   typescript:
-    specifier: 5.3.3
+    specifier: ^5.3.3
     version: 5.3.3
 
 packages:
@@ -2671,6 +2677,10 @@ packages:
       '@types/har-format': 1.2.15
     dev: true
 
+  /@types/crypto-js@4.2.2:
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+    dev: true
+
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: false
@@ -2701,6 +2711,10 @@ packages:
     resolution: {integrity: sha512-QmgQZGWu1Yw9TDyAP9ZzpFJKynYNeOvwMJmaxABfieQoVoiVOS6MN1WSpqpRcbeA5+RW82kraAVxCCJg+780Qw==}
     dependencies:
       undici-types: 5.26.5
+    dev: true
+
+  /@types/pako@2.0.3:
+    resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
     dev: true
 
   /@types/parse-json@4.0.2:
