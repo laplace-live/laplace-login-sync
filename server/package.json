@@ -18,11 +18,12 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/crypto-js": "4.2.1",
-    "@types/pako": "2.0.3",
-    "prettier": "3.1.1"
+    "@types/crypto-js": "^4.2.1",
+    "@types/pako": "^2.0.3",
+    "prettier": "^3.1.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "packageManager": "bun@1.1.3"
 }
