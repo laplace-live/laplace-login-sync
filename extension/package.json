@@ -43,7 +43,7 @@
     "name": "__MSG_appTitle__",
     "default_locale": "en",
     "host_permissions": [
-      "*://www.bilibili.com/*"
+      "*://*.bilibili.com/"
     ],
     "permissions": [
       "cookies",
