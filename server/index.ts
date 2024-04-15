@@ -2,6 +2,8 @@ import { unlink } from 'node:fs/promises'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { validator } from 'hono/validator'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 
 import pako from 'pako'
 import CryptoJS from 'crypto-js'
@@ -16,6 +18,12 @@ const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
 const auth = process.env.LAPLACE_LOGIN_SYNC_AUTH_KEY
 
 const dataDir = import.meta.dir + '/data'
+
+const zStringNotEmpty = (msg?: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, { message: msg ?? 'Required!' })
 
 const app = new Hono()
 
@@ -58,74 +66,64 @@ app.post('/update', async (c) => {
   }
 })
 
-app.post(
-  '/remove',
-  validator('json', (value, c) => {
-    const uuid = value['uuid']
-    const token = value['token']
+const removeSchema = z.object({
+  uuid: z.string(),
+  token: z.string(),
+})
 
-    if (!uuid || typeof uuid !== 'string') {
-      return c.text('Invalid uuid!', 400)
-    }
-    if (!token || typeof token !== 'string') {
-      return c.text('Invalid uuid!', 400)
-    }
-    return {
-      uuid,
-      token,
-    }
-  }),
-  async (c) => {
-    const body = c.req.valid('json')
-    const uuid = body.uuid
-    const token = body.token
+app.post('/remove', zValidator('form', removeSchema), async (c) => {
+  const body = c.req.valid('form')
+  const uuid = body.uuid
+  const token = body.token
 
-    try {
-      const filePath = `${dataDir}/${uuid}.json`
+  try {
+    const filePath = `${dataDir}/${uuid}.json`
 
-      if (!(await Bun.file(filePath).exists())) {
-        return c.json({ code: 404, message: 'Credentials not found' }, 404)
+    if (!(await Bun.file(filePath).exists())) {
+      return c.json({ code: 404, message: 'Credentials not found' }, 404)
+    } else {
+      const data = JSON.parse(await Bun.file(filePath).text())
+
+      if (!data) {
+        return c.json({ code: 500, message: 'Internal server error' }, 500)
       } else {
+        try {
+          const parsed = cookieCloudDecrypt(uuid, data.encrypted, token)
 
-        const data = JSON.parse(await Bun.file(filePath).text())
-
-        if (!data) {
-          return c.json({ code: 500, message: 'Internal server error' }, 500)
-        } else {
-
-          try {
-            const parsed = cookieCloudDecrypt(uuid, data.encrypted, token)
-
-            if (typeof parsed === 'object' && 'cookie_data' in parsed) {
-              await unlink(filePath)
-              return c.json({ code: 200, message: 'Done' })
-            } else {
-              return c.json({ code: 403, message: 'Decrpted data error' })
-            }
-          } catch (error) {
-            return c.json({ code: 403, message: 'Token error' })
+          if (typeof parsed === 'object' && 'cookie_data' in parsed) {
+            await unlink(filePath)
+            return c.json({ code: 200, message: 'Done' })
+          } else {
+            return c.json({ code: 403, message: 'Decrpted data error' })
           }
+        } catch (error) {
+          return c.json({ code: 403, message: 'Token error' })
         }
       }
-    } catch (error) {
-      return c.json({ code: 500, message: 'Error removing credentials' })
     }
+  } catch (error) {
+    return c.json({ code: 500, message: 'Error removing credentials' })
   }
-)
+})
 
-app.all(
+app.get(
   '/get/:uuid',
-  validator('form', (value, c) => {
-    const password = value['password']
+  validator('query', (value, c) => {
+    const parsed = z
+      .object({
+        auth: zStringNotEmpty().optional(),
+      })
+      .safeParse(value)
 
-    if (!password || typeof password !== 'string') {
-      return { password: '' }
+    if (!parsed.success) {
+      return c.text('Invalid auth!', 401)
     }
-    return { password }
+    return parsed.data
   }),
   async (c) => {
+    const query = c.req.valid('query')
     const uuid = c.req.param('uuid')
-    const authToken = c.req.query('auth')
+    const authToken = query.auth
 
     if (useAuth !== undefined && auth && auth !== authToken) {
       return c.json({ code: 403, message: 'Unauthorized' }, 403)
@@ -143,19 +141,60 @@ app.all(
 
     const data = JSON.parse(await Bun.file(filePath).text())
 
+    // This condition is requied because we need to validate `data` first to avoid malformed content
     if (!data) {
       return c.json({ code: 500, message: 'Internal server error' }, 500)
     } else {
-      if (c.req.method === 'POST') {
-        const body = c.req.valid('form')
-        const password = body.password
+      return c.json(data)
+    }
+  }
+)
 
-        if (password !== '') {
-          const parsed = cookieCloudDecrypt(uuid, data.encrypted, password)
-          return c.json(parsed)
-        } else {
-          return c.json({ code: 403, message: 'Missing token' }, 403)
-        }
+app.post(
+  '/get/:uuid',
+  validator('json', (value, c) => {
+    const parsed = z
+      .object({
+        password: zStringNotEmpty().optional(),
+        auth: zStringNotEmpty().optional(),
+      })
+      .safeParse(value)
+
+    if (!parsed.success) {
+      return c.text('Invalid form!', 401)
+    }
+    return parsed.data
+  }),
+  async (c) => {
+    const form = c.req.valid('json')
+    const uuid = c.req.param('uuid')
+    const authToken = form.auth
+
+    if (useAuth !== undefined && auth && auth !== authToken) {
+      return c.json({ code: 403, message: 'Unauthorized' }, 403)
+    }
+
+    if (!uuid) {
+      return c.json({ code: 400, message: 'Bad request' }, 400)
+    }
+
+    const filePath = `${dataDir}/${uuid}.json`
+
+    if (!(await Bun.file(filePath).exists())) {
+      return c.json({ code: 404, message: 'Not found' }, 404)
+    }
+
+    const data = JSON.parse(await Bun.file(filePath).text())
+
+    // This condition is requied because we need to validate `data` first to avoid malformed content
+    if (!data) {
+      return c.json({ code: 500, message: 'Internal server error' }, 500)
+    } else {
+      const password = form.password
+
+      if (password && password !== '') {
+        const parsed = cookieCloudDecrypt(uuid, data.encrypted, password)
+        return c.json(parsed)
       } else {
         return c.json(data)
       }

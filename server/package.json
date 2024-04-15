@@ -9,9 +9,12 @@
     "build": "bun build ./index.ts --outdir ./build"
   },
   "dependencies": {
+    "@hono/zod-openapi": "0.11.0",
+    "@hono/zod-validator": "0.2.1",
     "crypto-js": "4.2.0",
     "hono": "3.12.2",
-    "pako": "2.1.0"
+    "pako": "2.1.0",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@types/bun": "latest",
