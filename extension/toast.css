@@ -1,0 +1,8 @@
+:root {
+  --toastify-toast-min-height: 0;
+  --toastify-color-progress-light: linear-gradient(
+    to right,
+    theme('colors.emerald.700'),
+    theme('colors.emerald.300')
+  );
+}

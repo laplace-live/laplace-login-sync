@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast, ToastContainer } from 'react-toastify'
 import short_uid from 'short-uuid'
 import browser from 'webextension-polyfill'
 
@@ -6,6 +7,8 @@ import { sendToBackground } from '@plasmohq/messaging'
 
 import type { RequestBody, ResponseBody } from '~background/messages/config'
 
+import 'react-toastify/dist/ReactToastify.css'
+import './toast.css'
 import './style.scss'
 
 import Button from '~components/button'
@@ -47,13 +50,13 @@ function IndexPopup() {
       !data['type']
     ) {
       setIsLoading(false)
-      alert('请填写完整的信息')
+      toast('请填写完整的信息')
       return
     }
 
     if (data['type'] == 'pause') {
       setIsLoading(false)
-      alert('暂停状态不能' + action)
+      toast('暂停状态不能' + action)
       return
     }
 
@@ -70,10 +73,10 @@ function IndexPopup() {
     console.log(action + '返回', ret)
 
     if (ret && ret['message'] == 'done') {
-      if (ret['note']) alert(ret['note'])
-      else alert(action + '成功')
+      if (ret['note']) toast(ret['note'])
+      else toast(action + '成功', { toastId: 'success' })
     } else {
-      alert(action + '失败，请检查填写的信息是否正确')
+      toast(action + '失败，请检查填写的信息是否正确', { toastId: 'testError' })
     }
 
     setIsLoading(false)
@@ -86,7 +89,7 @@ function IndexPopup() {
       !data['uuid'] ||
       !data['type']
     ) {
-      alert('请填写完整的信息')
+      toast('请填写完整的信息', { toastId: 'saveError' })
       return
     }
     await save_data('COOKIE_SYNC_SETTING', data)
@@ -94,7 +97,7 @@ function IndexPopup() {
     console.log('load', ret)
     if (JSON.stringify(ret) == JSON.stringify(data)) {
       push && test('手动同步')
-      alert('保存成功')
+      toast('保存成功', { toastId: 'saveSuccess' })
       // window.close();
     }
   }
@@ -126,9 +129,9 @@ function IndexPopup() {
   async function copyToClipboard(text: string) {
     try {
       await navigator.clipboard.writeText(text)
-      alert('已拷贝到剪切板')
+      toast('已拷贝到剪切板', { toastId: 'copySuccess' })
     } catch (err) {
-      alert(`拷贝至剪切板出错：${err}`)
+      toast(`拷贝至剪切板出错：${err}`, { toastId: 'copyError' })
     }
   }
 
@@ -450,6 +453,8 @@ function IndexPopup() {
           </div>
         </div>
       </div>
+
+      <ToastContainer stacked position='bottom-center' />
     </div>
   )
 }
