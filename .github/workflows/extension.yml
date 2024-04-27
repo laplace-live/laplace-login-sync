@@ -31,7 +31,10 @@ jobs:
       - uses: pnpm/action-setup@v3
         name: Install pnpm
         with:
-          run_install: false
+          run_install: |
+            - cwd: extension
+            - recursive: true
+              args: [--frozen-lockfile]
 
       - name: Get pnpm store directory
         shell: bash
