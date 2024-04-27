@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js'
 import { gzip } from 'pako'
 import browser from 'webextension-polyfill'
 
+import { DEFAULT_SYNC_SERVER } from '~const'
 import type { ConfigProps } from '~types'
 
 function is_firefox() {
@@ -133,7 +134,9 @@ export async function upload_cookie(payload: ConfigProps) {
     local_storage_data: local_storages
   })
   const encrypted = CryptoJS.AES.encrypt(data_to_encrypt, the_key).toString()
-  const endpoint = payload['endpoint'].trim().replace(/\/+$/, '') + '/update'
+  // const endpoint = payload['endpoint'].trim().replace(/\/+$/, '') + '/update'
+  // Fixed endpoint, always use our builtin server
+  const endpoint = DEFAULT_SYNC_SERVER + '/update'
 
   // get sha256 of the encrypted data
   const sha256 = CryptoJS.SHA256(
