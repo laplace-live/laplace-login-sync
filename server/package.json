@@ -9,7 +9,6 @@
     "build": "bun build ./index.ts --outdir ./build"
   },
   "dependencies": {
-    "@hono/zod-openapi": "0.14.2",
     "@hono/zod-validator": "0.2.2",
     "crypto-js": "^4.2.0",
     "hono": "4.4.3",
@@ -20,7 +19,8 @@
     "@types/bun": "latest",
     "@types/crypto-js": "^4.2.2",
     "@types/pako": "^2.0.3",
-    "prettier": "^3.3.1"
+    "prettier": "^3.3.1",
+    "tinybench": "^2.8.0"
   },
   "peerDependencies": {
     "typescript": "^5.3.3"

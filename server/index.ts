@@ -4,9 +4,10 @@ import { cors } from 'hono/cors'
 import { validator } from 'hono/validator'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-
 import pako from 'pako'
 import CryptoJS from 'crypto-js'
+
+import { cryptoHash } from './lib/crypto'
 
 interface CookieRequestBody {
   uuid: string
@@ -208,9 +209,9 @@ app.onError((err, c) => {
 })
 
 function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
-  const the_key = CryptoJS.MD5(uuid + '-' + password)
-    .toString()
-    .substring(0, 16)
+  const the_key = cryptoHash(uuid + '-' + password, {
+    algorithm: 'md5',
+  }).substring(0, 16)
   const decrypted = CryptoJS.AES.decrypt(encrypted, the_key).toString(CryptoJS.enc.Utf8)
   const parsed = JSON.parse(decrypted)
   return parsed
