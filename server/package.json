@@ -9,21 +9,21 @@
     "build": "bun build ./index.ts --outdir ./build"
   },
   "dependencies": {
-    "@hono/zod-openapi": "0.11.0",
-    "@hono/zod-validator": "0.2.1",
-    "crypto-js": "4.2.0",
-    "hono": "3.12.2",
+    "@hono/zod-openapi": "0.14.2",
+    "@hono/zod-validator": "0.2.2",
+    "crypto-js": "^4.2.0",
+    "hono": "4.4.3",
     "pako": "2.1.0",
-    "zod": "3.22.4"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/crypto-js": "^4.2.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/pako": "^2.0.3",
-    "prettier": "^3.1.1"
+    "prettier": "^3.3.1"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.3.3"
   },
   "packageManager": "bun@1.1.3"
 }
