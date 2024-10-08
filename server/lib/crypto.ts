@@ -1,21 +1,29 @@
+import { CryptoHasher } from 'bun'
 import { createHmac } from 'crypto'
 import type { DigestEncoding, SupportedCryptoAlgorithms } from 'bun'
 
 export function cryptoHash(
   input: Bun.BlobOrStringOrBuffer,
   {
+    key,
     algorithm,
     encoding,
   }: {
+    /** HMAC digests secret key */
+    key?: string
     algorithm?: SupportedCryptoAlgorithms
     encoding?: DigestEncoding
   } = {}
 ) {
-  return new Bun.CryptoHasher(algorithm || 'sha256').update(input).digest(encoding || 'hex')
+  const hasher = key
+    ? new CryptoHasher(algorithm || 'sha256', key)
+    : new CryptoHasher(algorithm || 'sha256')
+
+  return hasher.update(input).digest(encoding || 'hex')
 }
 
 export function cryptoHmac(
-  input: string | NodeJS.ArrayBufferView,
+  input: Bun.BlobOrStringOrBuffer,
   key: string,
   {
     algorithm,
@@ -25,9 +33,8 @@ export function cryptoHmac(
     encoding?: DigestEncoding
   } = {}
 ) {
-  return createHmac(algorithm || 'sha256', key)
-    .update(input)
-    .digest(encoding || 'hex')
+  const hasher = new CryptoHasher(algorithm || 'sha256', key)
+  return hasher.update(input).digest(encoding || 'hex')
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest

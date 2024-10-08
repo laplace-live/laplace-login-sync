@@ -1,6 +1,13 @@
 import { Bench } from 'tinybench'
 import CryptoJS from 'crypto-js'
-import { cryptoHash, decryptAes, encryptAes, hashEncode, hashToString } from './lib/crypto'
+import {
+  cryptoHash,
+  cryptoHmac,
+  decryptAes,
+  encryptAes,
+  hashEncode,
+  hashToString,
+} from './lib/crypto'
 
 const keyStr = 'uuid1234-password12345'
 const cookiesToEncrypt = JSON.stringify({
@@ -49,11 +56,20 @@ bench
   .add('bun-md5', async () => {
     cryptoHash(keyStr, { algorithm: 'md5' })
   })
+  .add('bun-md5-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'md5', key: 'secret-key' })
+  })
   .add('bun-sha1', async () => {
     cryptoHash(keyStr, { algorithm: 'sha1' })
   })
+  .add('bun-sha1-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'sha1', key: 'secret-key' })
+  })
   .add('bun-sha256', async () => {
     cryptoHash(keyStr, { algorithm: 'sha256' })
+  })
+  .add('bun-sha256-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'sha256', key: 'secret-key' })
   })
   .add('cryptojs-md5', async () => {
     CryptoJS.MD5(keyStr).toString()
