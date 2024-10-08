@@ -27,28 +27,33 @@ const cryptojsMd5Str = CryptoJS.MD5(keyStr).toString().substring(0, 16)
 console.log(`cryptojsMd5Str`, cryptojsMd5Str)
 
 const cryptojsSha1Str = CryptoJS.SHA1(keyStr).toString().substring(0, 16)
-console.log(`cryptojsSha1Str`, cryptojsSha1Str)
+console.log(`\ncryptojsSha1Str`, cryptojsSha1Str)
 
 const cryptojsAesStr = CryptoJS.AES.encrypt(cookiesToEncrypt, cryptojsMd5Str).toString()
-console.log(`cryptojsAesStr`, cryptojsAesStr)
+console.log(`\ncryptojsAesStr`, cryptojsAesStr)
 
 const cryptojsAesStrDecrypted = CryptoJS.AES.decrypt(cryptojsAesStr, cryptojsMd5Str).toString(
   CryptoJS.enc.Utf8
 )
-console.log(`cryptojsAesStrDecrypted`, cryptojsAesStrDecrypted)
+console.log(`\ncryptojsAesStrDecrypted`, cryptojsAesStrDecrypted)
 
 const apiSha1Str = hashToString(await hashEncode(keyStr, 'SHA-256'))
-console.log(`apiSha1Str`, apiSha1Str)
+console.log(`\napiSha1Str`, apiSha1Str)
 
 const apiAesStr = await encryptAes(cookiesToEncrypt, keyStr)
-console.log(`apiAesStr`, apiAesStr)
+console.log(`\napiAesStr`, apiAesStr)
 
 const apiAesStrDecrypted = await decryptAes(apiAesStr, keyStr)
-console.log(`apiAesStrDecrypted`, apiAesStrDecrypted)
+console.log(`\napiAesStrDecrypted`, apiAesStrDecrypted)
 
-const bunMd5 = new Bun.CryptoHasher('md5')
-const bunMd5Str = bunMd5.update(keyStr).digest('hex')
-console.log(`bunMd5Str`, bunMd5Str)
+const bunMd5Str = cryptoHash(keyStr, { algorithm: 'md5' })
+console.log(`\nbunMd5Str`, bunMd5Str)
+
+const bunSha256HmacStr = cryptoHash(keyStr, { algorithm: 'sha256', key: 'secret-key' })
+console.log(`\nbunSha256HmacStr`, bunSha256HmacStr)
+
+const cryptoSha256HmacStr = cryptoHmac(keyStr, 'secret-key', { algorithm: 'sha256' })
+console.log(`\ncryptoSha256HmacStr`, cryptoSha256HmacStr)
 
 const bench = new Bench({ time: 1000 })
 
@@ -56,20 +61,11 @@ bench
   .add('bun-md5', async () => {
     cryptoHash(keyStr, { algorithm: 'md5' })
   })
-  .add('bun-md5-hmac', async () => {
-    cryptoHash(keyStr, { algorithm: 'md5', key: 'secret-key' })
-  })
   .add('bun-sha1', async () => {
     cryptoHash(keyStr, { algorithm: 'sha1' })
   })
-  .add('bun-sha1-hmac', async () => {
-    cryptoHash(keyStr, { algorithm: 'sha1', key: 'secret-key' })
-  })
   .add('bun-sha256', async () => {
     cryptoHash(keyStr, { algorithm: 'sha256' })
-  })
-  .add('bun-sha256-hmac', async () => {
-    cryptoHash(keyStr, { algorithm: 'sha256', key: 'secret-key' })
   })
   .add('cryptojs-md5', async () => {
     CryptoJS.MD5(keyStr).toString()
@@ -97,6 +93,24 @@ bench
   })
   .add('crypto-decrypt-aes', async () => {
     await decryptAes(apiAesStr, keyStr)
+  })
+  .add('bun-md5-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'md5', key: 'secret-key' })
+  })
+  .add('bun-sha1-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'sha1', key: 'secret-key' })
+  })
+  .add('bun-sha256-hmac', async () => {
+    cryptoHash(keyStr, { algorithm: 'sha256', key: 'secret-key' })
+  })
+  .add('crypto-md5-hmac', async () => {
+    cryptoHmac(keyStr, 'secret-key', { algorithm: 'md5' })
+  })
+  .add('crypto-sha1-hmac', async () => {
+    cryptoHmac(keyStr, 'secret-key', { algorithm: 'sha1' })
+  })
+  .add('crypto-sha256-hmac', async () => {
+    cryptoHmac(keyStr, 'secret-key', { algorithm: 'sha256' })
   })
 
 await bench.run()

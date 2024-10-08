@@ -23,7 +23,7 @@ export function cryptoHash(
 
 /** @deprecated, use `cryptoHash` instead */
 export function cryptoHmac(
-  input: Bun.BlobOrStringOrBuffer,
+  input: string | NodeJS.ArrayBufferView,
   key: string,
   {
     algorithm,
@@ -33,8 +33,9 @@ export function cryptoHmac(
     encoding?: DigestEncoding
   } = {}
 ) {
-  const hasher = new CryptoHasher(algorithm || 'sha256', key)
-  return hasher.update(input).digest(encoding || 'hex')
+  return createHmac(algorithm || 'sha256', key)
+    .update(input)
+    .digest(encoding || 'hex')
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
