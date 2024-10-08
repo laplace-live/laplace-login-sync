@@ -1,6 +1,5 @@
-import { CryptoHasher } from 'bun'
+import { CryptoHasher, type DigestEncoding, type SupportedCryptoAlgorithms } from 'bun'
 import { createHmac } from 'crypto'
-import type { DigestEncoding, SupportedCryptoAlgorithms } from 'bun'
 
 export function cryptoHash(
   input: Bun.BlobOrStringOrBuffer,
@@ -22,6 +21,7 @@ export function cryptoHash(
   return hasher.update(input).digest(encoding || 'hex')
 }
 
+/** @deprecated, use `cryptoHash` instead */
 export function cryptoHmac(
   input: Bun.BlobOrStringOrBuffer,
   key: string,
