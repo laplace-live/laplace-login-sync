@@ -5,18 +5,17 @@ import { validator } from 'hono/validator'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import pako from 'pako'
-import CryptoJS from 'crypto-js'
 
-import { cryptoHash } from './lib/crypto'
+import { cryptoHash, decryptAes } from './lib/crypto'
 
 interface CookieRequestBody {
   uuid: string
   encrypted: string
 }
 
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8088
-const useAuth = process.env.LAPLACE_LOGIN_SYNC_AUTH_MODE
-const auth = process.env.LAPLACE_LOGIN_SYNC_AUTH_KEY
+const port = process.env['PORT'] ? parseInt(process.env['PORT'], 10) : 8088
+const useAuth = process.env['LAPLACE_LOGIN_SYNC_AUTH_MODE']
+const auth = process.env['LAPLACE_LOGIN_SYNC_AUTH_KEY']
 
 const dataDir = import.meta.dir + '/data'
 
@@ -209,10 +208,9 @@ app.onError((err, c) => {
 })
 
 function cookieCloudDecrypt(uuid: string, encrypted: string, password: string) {
-  const the_key = cryptoHash(uuid + '-' + password, {
-    algorithm: 'md5',
-  }).substring(0, 16)
-  const decrypted = CryptoJS.AES.decrypt(encrypted, the_key).toString(CryptoJS.enc.Utf8)
+  const key = cryptoHash(uuid + '-' + password, { algorithm: 'md5' }).substring(0, 16)
+  // const decrypted = CryptoJS.AES.decrypt(encrypted, key).toString(CryptoJS.enc.Utf8)
+  const decrypted = decryptAes(encrypted, key)
   const parsed = JSON.parse(decrypted)
   return parsed
 }

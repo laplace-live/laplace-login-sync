@@ -1,5 +1,12 @@
 import { CryptoHasher, type DigestEncoding, type SupportedCryptoAlgorithms } from 'bun'
-import { createHmac, type BinaryToTextEncoding } from 'crypto'
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  type BinaryToTextEncoding,
+} from 'node:crypto'
 
 export function cryptoHash(
   input: Bun.BlobOrStringOrBuffer,
@@ -76,39 +83,54 @@ export async function generateDeriveKey(keyStr: string) {
   return key
 }
 
-export async function encryptAes(text: string, keyStr: string) {
-  const iv = crypto.getRandomValues(new Uint8Array(16)) // AES requires an initialization vector
-  const key = await generateDeriveKey(keyStr)
+// https://github.com/brix/crypto-js/issues/468
+// https://github.com/brix/crypto-js/issues/468
+// From https://gist.github.com/schakko/2628689?permalink_comment_id=3321113#gistcomment-3321113
+// From https://gist.github.com/chengen/450129cb95c7159cb05001cc6bdbf6a1
+// TODO: type error in vscode but not in cursor, idk why
+export function encryptAes(plainText: string, secret: string) {
+  const salt = randomBytes(8)
+  const password = Buffer.concat([Buffer.from(secret, 'binary'), salt])
+  const hash = []
+  let digest = password
+  for (let i = 0; i < 3; i++) {
+    hash[i] = createHash('md5').update(digest).digest()
+    // hash[i] = new Bun.CryptoHasher('md5').update(digest).digest()
+    digest = Buffer.concat([hash[i], password])
+  }
+  const keyDerivation = Buffer.concat(hash)
+  const key = keyDerivation.subarray(0, 32)
+  const iv = keyDerivation.subarray(32)
+  const cipher = createCipheriv('aes-256-cbc', key, iv)
 
-  const encoder = new TextEncoder()
-  const data = encoder.encode(text)
+  const result = Buffer.concat([
+    Buffer.from('Salted__', 'utf8'),
+    salt,
+    cipher.update(plainText),
+    cipher.final(),
+  ])
 
-  const encryptedData = await crypto.subtle.encrypt({ name: 'AES-CBC', iv: iv }, key, data)
-
-  const buffer = new Uint8Array(encryptedData)
-  const ivStr = Array.from(iv)
-    .map((b) => String.fromCharCode(b))
-    .join('')
-  const encryptedStr = Array.from(buffer)
-    .map((b) => String.fromCharCode(b))
-    .join('')
-
-  // Return base64 encoded iv + encrypted data
-  return btoa(ivStr + encryptedStr)
+  return result.toString('base64')
 }
 
-export async function decryptAes(encryptedBase64: string, keyStr: string) {
-  // Decode base64 string
-  const binaryStr = atob(encryptedBase64)
-  const bytes = new Uint8Array(binaryStr.length).map((_, i) => binaryStr.charCodeAt(i))
+// TODO: type error in vscode but not in cursor, idk why
+export function decryptAes(encryptedText: string, secret: string) {
+  const cypher = Buffer.from(encryptedText, 'base64')
+  const salt = cypher.subarray(8, 16)
+  const password = Buffer.concat([Buffer.from(secret, 'binary'), salt])
+  const md5Hashes = []
+  let digest = password
+  for (let i = 0; i < 3; i++) {
+    md5Hashes[i] = createHash('md5').update(digest).digest()
+    // md5Hashes[i] = new Bun.CryptoHasher('md5').update(digest).digest()
+    digest = Buffer.concat([md5Hashes[i], password])
+  }
+  const key = Buffer.concat([md5Hashes[0], md5Hashes[1]])
+  const iv = md5Hashes[2]
+  const contents = cypher.subarray(16)
+  const decipher = createDecipheriv('aes-256-cbc', key, iv)
 
-  const iv = bytes.slice(0, 16) // Extract the first 16 bytes as the IV
-  const data = bytes.slice(16) // The rest is the encrypted data
+  const result = Buffer.concat([decipher.update(contents), decipher.final()])
 
-  const key = await generateDeriveKey(keyStr)
-
-  const decryptedData = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: iv }, key, data)
-
-  const decoder = new TextDecoder()
-  return decoder.decode(decryptedData)
+  return result.toString()
 }
