@@ -17,7 +17,8 @@ const port = process.env['PORT'] ? parseInt(process.env['PORT'], 10) : 8088
 const useAuth = process.env['LAPLACE_LOGIN_SYNC_AUTH_MODE']
 const auth = process.env['LAPLACE_LOGIN_SYNC_AUTH_KEY']
 
-const dataDir = import.meta.dir + '/data'
+// this code is inside ./src, so we need to go one level up to access the data folder
+const dataDir = import.meta.dir + '/../data'
 
 const zStringNotEmpty = (msg?: string) =>
   z

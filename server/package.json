@@ -5,8 +5,9 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "dev": "bun run --hot index.ts",
-    "build": "bun build ./index.ts --outdir ./build"
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build src/index.ts --target bun --outdir ./build",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "0.4.1",

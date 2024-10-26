@@ -30,10 +30,10 @@ RUN bun test
 # copy production dependencies and source code into final image
 FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /app/index.ts .
+COPY --from=prerelease /app/src ./src
 COPY --from=prerelease /app/package.json .
 
 # run the app
 USER bun
 EXPOSE 8088/tcp
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT [ "bun", "run", "start" ]
