@@ -1,5 +1,5 @@
 import { CryptoHasher, type DigestEncoding, type SupportedCryptoAlgorithms } from 'bun'
-import { createHmac } from 'crypto'
+import { createHmac, type BinaryToTextEncoding } from 'crypto'
 
 export function cryptoHash(
   input: Bun.BlobOrStringOrBuffer,
@@ -30,7 +30,7 @@ export function cryptoHmac(
     encoding,
   }: {
     algorithm?: SupportedCryptoAlgorithms
-    encoding?: DigestEncoding
+    encoding?: BinaryToTextEncoding
   } = {}
 ) {
   return createHmac(algorithm || 'sha256', key)
