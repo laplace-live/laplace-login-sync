@@ -4,8 +4,6 @@ import type { ConfigProps } from '~types'
 
 import { upload_cookie } from '../../function'
 
-// import { Base64 } from 'js-base64';
-
 export type RequestBody = {
   payload: ConfigProps
 }
@@ -15,10 +13,7 @@ export type ResponseBody = {
   note: string | null
 }
 
-export const handler: PlasmoMessaging.MessageHandler<
-  RequestBody,
-  ResponseBody
-> = async (req, res) => {
+export const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async (req, res) => {
   // 获得cookie，并进行过滤
   const payload = req.body?.payload
 

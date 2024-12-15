@@ -1,9 +1,4 @@
-import {
-  get_local_storage_by_domains,
-  load_data,
-  remove_data,
-  save_data
-} from './function'
+import { get_local_storage_by_domains, load_data, remove_data, save_data } from './function'
 
 export {}
 

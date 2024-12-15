@@ -38,8 +38,11 @@ export async function browser_load_all(prefix: string | null = null) {
     for (let key in result) {
       if (key.startsWith(prefix)) {
         // remove prefix from key
-        ret[key.substring(prefix.length)] =
-          JSON.parse(result[key]) ?? result[key]
+        if (typeof result[key] === 'string') {
+          ret[key.substring(prefix.length)] = JSON.parse(result[key]) ?? result[key]
+        } else {
+          ret[key.substring(prefix.length)] = result[key]
+        }
       }
     }
   }
@@ -47,21 +50,17 @@ export async function browser_load_all(prefix: string | null = null) {
 }
 
 export async function load_data(key: string) {
-  const data = browser?.storage
-    ? await browser_get(key)
-    : window.localStorage.getItem(key)
+  const data = browser?.storage ? await browser_get(key) : window.localStorage.getItem(key)
   // console.log("load",key,data);
   try {
-    return JSON.parse(data)
+    return typeof data === 'string' ? JSON.parse(data) : data
   } catch (error) {
     return data || []
   }
 }
 
 export async function remove_data(key: string) {
-  const ret = browser?.storage
-    ? await browser_remove(key)
-    : window.localStorage.removeItem(key)
+  const ret = browser?.storage ? await browser_remove(key) : window.localStorage.removeItem(key)
   return ret
 }
 
@@ -82,23 +81,15 @@ export async function upload_cookie(payload: ConfigProps) {
     showBadge('err')
     return false
   }
-  const domains =
-    payload['domains']?.trim().length > 0
-      ? payload['domains']?.trim().split('\n')
-      : []
+  const domains = payload['domains']?.trim().length > 0 ? payload['domains']?.trim().split('\n') : []
 
-  const blacklist =
-    payload['blacklist']?.trim().length > 0
-      ? payload['blacklist']?.trim().split('\n')
-      : []
+  const blacklist = payload['blacklist']?.trim().length > 0 ? payload['blacklist']?.trim().split('\n') : []
 
   const cookies = await get_cookie_by_domains(domains, blacklist)
   // console.log(`cookies`, cookies)
 
   const with_storage = payload['with_storage'] || 0
-  const local_storages = with_storage
-    ? await get_local_storage_by_domains(domains)
-    : {}
+  const local_storages = with_storage ? await get_local_storage_by_domains(domains) : {}
 
   let headers: {
     [key: string]: string
@@ -139,9 +130,7 @@ export async function upload_cookie(payload: ConfigProps) {
   const endpoint = DEFAULT_SYNC_SERVER + '/update'
 
   // get sha256 of the encrypted data
-  const sha256 = CryptoJS.SHA256(
-    uuid + '-' + password + '-' + endpoint + '-' + data_to_encrypt
-  ).toString()
+  const sha256 = CryptoJS.SHA256(uuid + '-' + password + '-' + endpoint + '-' + data_to_encrypt).toString()
   console.log('sha256', sha256)
   const last_uploaded_info = await load_data('LAST_UPLOADED_COOKIE')
   console.log(`last_uploaded_info.timestamp`, last_uploaded_info?.timestamp)
@@ -152,9 +141,7 @@ export async function upload_cookie(payload: ConfigProps) {
     last_uploaded_info &&
     last_uploaded_info.sha256 === sha256 &&
     // In some rare case (ie when extension loaded in development mode), the .timestamp can be undefined
-    new Date().getTime() -
-      (last_uploaded_info?.timestamp || new Date().getTime()) <
-      1000 * 60 * 60 * 3
+    new Date().getTime() - (last_uploaded_info?.timestamp || new Date().getTime()) < 1000 * 60 * 60 * 3
   ) {
     console.log('same data in 3 hours, skip')
     return {
@@ -199,7 +186,9 @@ export async function get_local_storage_by_domains(domains: string[] = []) {
       for (const key in local_storages) {
         if (key.indexOf(domain) >= 0) {
           console.log('domain 匹配', domain, key)
-          ret_storage[key] = local_storages[key]
+          if (typeof local_storages[key] === 'string') {
+            ret_storage[key] = local_storages[key]
+          }
         }
       }
     }
@@ -207,16 +196,14 @@ export async function get_local_storage_by_domains(domains: string[] = []) {
   return ret_storage
 }
 
-async function get_cookie_by_domains(
-  domains: string[] = [],
-  blacklist: string[] = []
-) {
+async function get_cookie_by_domains(domains: string[] = [], blacklist: string[] = []) {
   let ret_cookies: {
     [key: string]: browser.Cookies.Cookie[]
   } = {}
   // 获取cookie
   if (browser.cookies) {
-    const cookies = await browser.cookies.getAll({})
+    // https://github.com/easychen/CookieCloud/pull/87
+    const cookies = await browser.cookies.getAll({ partitionKey: {} })
     // console.log('cookies', cookies)
     if (Array.isArray(domains) && domains.length > 0) {
       // console.log('domains', domains)

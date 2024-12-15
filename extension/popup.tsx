@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
-import { toast, ToastContainer } from 'react-toastify'
 import short_uid from 'short-uuid'
+import { toast } from 'sonner'
 import browser from 'webextension-polyfill'
 
 import { sendToBackground } from '@plasmohq/messaging'
 
 import type { RequestBody, ResponseBody } from '~background/messages/config'
 
-import 'react-toastify/dist/ReactToastify.css'
-import './toast.css'
-import './style.scss'
+import './global.css'
 
-import Button from '~components/button'
-import Input from '~components/input'
+import Button from '~components/ui/button'
+import Input from '~components/ui/input'
+import { Radio } from '~components/ui/radio'
+import { Toaster } from '~components/ui/sonner'
 import type { ConfigProps } from '~types'
 
 import { load_data, save_data } from './function'
@@ -43,12 +43,7 @@ function IndexPopup() {
     console.log('request,begin')
     setIsLoading(true)
 
-    if (
-      !data['endpoint'] ||
-      !data['password'] ||
-      !data['uuid'] ||
-      !data['type']
-    ) {
+    if (!data['endpoint'] || !data['password'] || !data['uuid'] || !data['type']) {
       setIsLoading(false)
       toast('请填写完整的信息')
       return
@@ -74,22 +69,17 @@ function IndexPopup() {
 
     if (ret && ret['message'] == 'done') {
       if (ret['note']) toast(ret['note'])
-      else toast(action + '成功', { toastId: 'success' })
+      else toast.success(action + '成功', { id: 'save-sync' })
     } else {
-      toast(action + '失败，请检查填写的信息是否正确', { toastId: 'testError' })
+      toast.error(action + '失败，请检查填写的信息是否正确', { id: 'save-sync' })
     }
 
     setIsLoading(false)
   }
 
   async function save(push: boolean) {
-    if (
-      !data['endpoint'] ||
-      !data['password'] ||
-      !data['uuid'] ||
-      !data['type']
-    ) {
-      toast('请填写完整的信息', { toastId: 'saveError' })
+    if (!data['endpoint'] || !data['password'] || !data['uuid'] || !data['type']) {
+      toast('请填写完整的信息', { id: 'saveError' })
       return
     }
     await save_data('COOKIE_SYNC_SETTING', data)
@@ -97,15 +87,12 @@ function IndexPopup() {
     console.log('load', ret)
     if (JSON.stringify(ret) == JSON.stringify(data)) {
       push && test('手动同步')
-      toast('保存成功', { toastId: 'saveSuccess' })
+      toast.info('保存成功', { id: 'save-sync' })
       // window.close();
     }
   }
 
-  function onChange(
-    name: string,
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
+  function onChange(name: string, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     // console.log( "e" , name , e.target.value );
     setData({ ...data, [name]: e.target.value ?? '' })
   }
@@ -129,9 +116,9 @@ function IndexPopup() {
   async function copyToClipboard(text: string) {
     try {
       await navigator.clipboard.writeText(text)
-      toast('已拷贝到剪切板', { toastId: 'copySuccess' })
+      toast('已拷贝到剪切板', { id: 'copySuccess' })
     } catch (err) {
-      toast(`拷贝至剪切板出错：${err}`, { toastId: 'copyError' })
+      toast(`拷贝至剪切板出错：${err}`, { id: 'copyError' })
     }
   }
 
@@ -144,36 +131,28 @@ function IndexPopup() {
   }, [])
 
   return (
-    <div
-      className='w-128 overflow-x-hidden bg-white dark:bg-neutral-800'
-      style={{ width: '360px' }}
-    >
+    <div className='w-128 overflow-x-hidden bg-white dark:bg-neutral-800' style={{ width: '360px' }}>
       <div className='form p-3'>
-        <div className='text-line text-gray-700 dark:text-neutral-300'>
+        <div className='text-line text-neutral-800 dark:text-neutral-200'>
           {/* <div className="">工作模式</div> */}
           {/* <h1 className="text-xl font-bold">LAPLACE Login Sync</h1> */}
 
           {/* <p className="mb-2">请确保 <a href={'https://www.bilibili.com'} target='_blank'>网站已登录</a>，然后点击「保存并同步」</p> */}
 
           {data['uuid'] && data['uuid'] === init['uuid'] && (
-            <div className='bg-orange-400 text-white p-2 mb-2 rounded'>
-              {browser.i18n.getMessage('notInitialized')}
-            </div>
+            <div className='bg-orange-400 text-white p-2 mb-2 rounded'>{browser.i18n.getMessage('notInitialized')}</div>
           )}
 
           <div className='flex gap-2 mb-2'>
-            <div className='flex gap-0.5'>
-              <input
-                type='radio'
+            <div className='flex items-center gap-0.5'>
+              <Radio
                 id='up'
                 name='working-method'
                 value='up'
                 checked={data['type'] === 'up'}
                 onChange={(e) => onChange('type', e)}
               />
-              <label htmlFor='up'>
-                {browser.i18n.getMessage('syncLoginSessions')}
-              </label>
+              <label htmlFor='up'>{browser.i18n.getMessage('syncLoginSessions')}</label>
             </div>
 
             {/* <div className="flex gap-0.5">
@@ -188,18 +167,15 @@ function IndexPopup() {
               <label htmlFor="down">覆盖到浏览器</label>
             </div> */}
 
-            <div className='flex gap-0.5'>
-              <input
-                type='radio'
+            <div className='flex items-center gap-0.5'>
+              <Radio
                 id='pause'
                 name='working-method'
                 value='pause'
                 checked={data['type'] === 'pause'}
                 onChange={(e) => onChange('type', e)}
               />
-              <label htmlFor='pause'>
-                {browser.i18n.getMessage('pauseSyncing')}
-              </label>
+              <label htmlFor='pause'>{browser.i18n.getMessage('pauseSyncing')}</label>
             </div>
           </div>
 
@@ -227,18 +203,11 @@ function IndexPopup() {
                 <div className='right'>
                   <Button
                     className='p-2 my-1 ml-2'
-                    onClick={() =>
-                      copyToClipboard(`${data['uuid']}@${data['password']}`)
-                    }
+                    onClick={() => copyToClipboard(`${data['uuid']}@${data['password']}`)}
                   >
                     {browser.i18n.getMessage('copyToken')}
                   </Button>
-                  <Button
-                    className='ml-2'
-                    color='red'
-                    onClick={() => setData(init)}
-                    disabled={isLoading}
-                  >
+                  <Button className='ml-2' color='red' onClick={() => setData(init)} disabled={isLoading}>
                     {browser.i18n.getMessage('reset')}
                   </Button>
 
@@ -372,13 +341,13 @@ function IndexPopup() {
 
           {data['type'] && data['type'] == 'pause' && (
             <>
-              <div className='bg-orange-400 text-white p-2 my-2 rounded'>
+              <div className='bg-orange-600/10 text-orange-600 border-orange-600/50 dark:bg-orange-300/10 dark:text-orange-300 dark:border-orange-300/50 border p-2 my-2 rounded'>
                 {browser.i18n.getMessage('loginSyncPaused')}
               </div>
             </>
           )}
-          <div className='flex flex-row justify-between mt-2'>
-            <div className='left text-gray-400'>
+          <div className='flex flex-row justify-between mt-1.5'>
+            <div className='left text-neutral-400'>
               {data['type'] && data['type'] != 'pause' && (
                 <>
                   {/* <Button
@@ -434,7 +403,7 @@ function IndexPopup() {
             </a>
           </div> */}
 
-          <div className='text-gray-500 dark:text-neutral-400'>
+          <div className='text-neutral-500'>
             {/* <p><a href={'https://chat.laplace.live'} target="_blank">LAPLACE Login Sync</a>, based on <a href={'https://github.com/easychen/CookieCloud'} target="_blank">CookieCloud</a></p> */}
             <p>
               Brought to you by{' '}
@@ -442,10 +411,7 @@ function IndexPopup() {
                 LAPLACE
               </a>
               , based on{' '}
-              <a
-                href={'https://github.com/easychen/CookieCloud'}
-                target='_blank'
-              >
+              <a href={'https://github.com/easychen/CookieCloud'} target='_blank'>
                 CookieCloud
               </a>
             </p>
@@ -454,7 +420,7 @@ function IndexPopup() {
         </div>
       </div>
 
-      <ToastContainer stacked position='bottom-center' />
+      <Toaster position='bottom-center' />
     </div>
   )
 }
